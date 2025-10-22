@@ -1,1 +1,1 @@
-# othello
+# Projet Othello
