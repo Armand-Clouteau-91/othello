@@ -21,13 +21,19 @@ class Board:
     
     def valid_move(self, x, y, color):
         """Vérifie que le coup soit valide"""
+        opponent = "W" if color == "B" else "B"
+        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0), (1, 1)]
         # 1. Vérifie que le coup est dans le plateau
-        # 2. Vérifie que ma case n'est pas déjà occupée
-        # 3. Vérifie qu'un pion adverse est adjacent
+        if 1 <= x <= self.size and 1 <= y <= self.size:
+            # 2. Vérifie que ma case n'est pas déjà occupée
+            if self.board[x, y] == ".":
+            # 3. Vérifie qu'un pion adverse est adjacent (intégrer une boucle)
+                
+
         # 4. Vérifie qu'il y ai un pion allié sur une ligne ou une diagonale
         # 5. Vérifie qu'il n'y ai que des pions adverses entre les deux pions (pas de cases vides) 
         
-    def apply_move:
+    def apply_move(self, x, y, color):
         """Applique le coup"""
         pass
 
