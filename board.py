@@ -59,6 +59,7 @@ class Board:
                 and 0 <= ny < self.size
                 and self.board[nx, ny] == opponent
             ):
+                flip.append((nx, ny))
                 nx += dx
                 ny += dy
                 while 0 <= nx < self.size and 0 <= ny < self.size:
@@ -81,4 +82,6 @@ if __name__ == "__main__":
     board_start.apply_move(2, 3, "B")
     print(board_start.board)
     board_start.apply_move(2, 2, "W")
+    print(board_start.board)
+    board_start.apply_move(5, 4, "B")
     print(board_start.board)
