@@ -46,6 +46,15 @@ class Board:
                         ny += dy
         return False
 
+    def remaining_moves(self, color):
+        empty_rows, empty_cols = np.where(self.board == ".")
+        empty_squares = zip(empty_rows, empty_cols)
+        valid_moves =[]
+        for r,c in empty_squares:
+            if self.valid_move(r,c,color):
+                valid_moves.append((r,c))
+        return valid_moves
+
     def apply_move(self, x, y, color):
         """Applique le coup"""
         opponent = "W" if color == "B" else "B"
@@ -73,6 +82,7 @@ class Board:
                         break
                     nx += dx
                     ny += dy
+        
 
 
 if __name__ == "__main__":
