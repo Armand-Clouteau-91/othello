@@ -50,8 +50,8 @@ class Game:
     def player_move(self):
         while True:
             try:
-                row = int(input("Enter the row you want to put your piece in"))
-                col = int(input("Enter the column you want to put your piece in"))
+                row = int(input("Enter the row you want to put your piece in"))-1
+                col = int(input("Enter the column you want to put your piece in"))-1
                 return row, col
             except ValueError:
                 print("\nInvalid input. Please enter numbers only. Try again.\n")
