@@ -59,10 +59,12 @@ class Interface:
             # Valide et applique le coup
             if self.game.board.valid_move(row, col, self.game.color):
                 self.game.turn(row, col)
+                # ✓ AJOUTE CETTE LIGNE : Change le joueur
+                self.game.color = self.game.opponent[self.game.color]
                 self.feedback_message = ""
                 return True
             else:
-                self.move_history.pop()  # Retire la sauvegarde si coup invalide
+                self.move_history.pop()
                 self.feedback_message = "Invalid move!"
                 return False
 
