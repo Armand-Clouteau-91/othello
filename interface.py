@@ -16,6 +16,10 @@ class Interface:
         pygame.display.set_caption("Othello")
         self.clock = pygame.time.Clock()
         self.game = Game()
+        self.timer_started = False
+        self.start_time = 0
+        self.elapsed_time = 0
+        self.game_over = False
 
         # Couleurs
         self.GREEN = (34, 139, 34)
@@ -39,9 +43,9 @@ class Interface:
     def create_buttons(self):
         """Crée les boutons Undo, Restart, Pass Turn"""
         return {
-            "undo": pygame.Rect(620, 350, 150, 50),
-            "restart": pygame.Rect(620, 420, 150, 50),
-            "pass": pygame.Rect(620, 490, 150, 50),
+            "undo": pygame.Rect(620, 330, 150, 50),
+            "restart": pygame.Rect(620, 390, 150, 50),
+            "pass": pygame.Rect(620, 450, 150, 50),
         }
 
     def handle_click(self, pos):
@@ -61,6 +65,9 @@ class Interface:
             # Valide et applique le coup
             if self.game.board.valid_move(row, col, self.game.color):
                 self.game.turn(row, col)
+                if not self.timer_started :
+                    self.start_time = pygame.time.get_ticks()
+                    self.timer_started = True
                 # ✓ AJOUTE CETTE LIGNE : Change le joueur
                 self.game.color = self.game.opponent[self.game.color]
                 self.feedback_message = ""
@@ -83,6 +90,9 @@ class Interface:
             self.game = Game()
             self.move_history = []
             self.feedback_message = "Game restarted!"
+            self.game_over = False  # reset game over state
+            self.timer_started = False  # reset timer
+            self.elapsed_time = 0  
         elif button_name == "pass":
             self.game.color = self.game.opponent[self.game.color]
             self.feedback_message = "Turn passed!"
@@ -227,6 +237,61 @@ class Interface:
         moves_text = font_moves.render(f"Valid moves: {valid_moves_count}", True, self.DARK_GREEN)
         self.screen.blit(moves_text, (630, 280))
 
+        if self.timer_started and not self.game_over:
+            current_time = (pygame.time.get_ticks() - self.start_time) / 1000
+        else:
+            current_time = self.elapsed_time # Will be 0 if restarted, or final time if game over
+
+        minutes = int(current_time // 60)
+        seconds = int(current_time % 60)
+        time_str = f"{minutes:02}:{seconds:02}"
+
+        font = pygame.font.Font(None, 36)
+        timer_text = font.render(time_str, True, self.BLACK)
+        timer_rect = timer_text.get_rect(topright=(725, 510))  
+        self.screen.blit(timer_text, timer_rect)
+    
+    def check_game_over(self):
+        no_moves_black = len(self.game.board.remaining_moves('B')) == 0
+        no_moves_white = len(self.game.board.remaining_moves('W')) == 0
+        board_full = not any('.' in row for row in self.game.board.board)
+
+        if (no_moves_black and no_moves_white) or board_full:
+            self.game_over = True
+            return True
+        return False
+
+    def draw_ending_screen(self):
+        # Shadow overlay
+        overlay = pygame.Surface((self.screen_size, self.screen_size), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))  # Black with alpha for shadow effect
+        self.screen.blit(overlay, (0, 0))
+
+        # Display final scores and game duration
+        font_title = pygame.font.Font(None, 48)
+        font_info = pygame.font.Font(None, 36)
+
+        # Title
+        title_text = font_title.render("Game Over", True, self.WHITE)
+        title_rect = title_text.get_rect(center=(self.screen_size // 2, 100))
+        self.screen.blit(title_text, title_rect)
+
+        # Scores
+        black_score = self.game.score['B']
+        white_score = self.game.score['W']
+        winner = self.game.winner()
+        score_text = font_info.render(f"Black: {black_score} - White: {white_score}", True, self.WHITE)
+        score_rect = score_text.get_rect(center=(self.screen_size // 2, 180))
+        winner_text = font_info.render(f"{winner}", True, self.WHITE)
+        winner_rect = winner_text.get_rect(center=(self.screen_size // 2, 240))
+        self.screen.blit(score_text, score_rect)
+        self.screen.blit(winner_text, winner_rect)
+        # Timer
+        timer_text = font_info.render(f"Time: {self.elapsed_time:.2f} s", True, self.WHITE)
+        timer_rect = timer_text.get_rect(center=(self.screen_size // 2, 300))
+        self.screen.blit(timer_text, timer_rect)
+
+
     def run(self):
         """Boucle principale du jeu"""
         running = True
@@ -237,8 +302,15 @@ class Interface:
                     running = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_click(event.pos)
-
+                    move_made = self.handle_click(event.pos)
+                    if move_made and not self.game_over:
+                        if self.check_game_over() :
+                            self.game_over = True
+                            
+            
+            if self.timer_started and not self.game_over:
+                self.elapsed_time = (pygame.time.get_ticks() - self.start_time) / 1000
+                
             # Dessine tout
             self.screen.fill(self.WHITE)
             self.draw_board()
@@ -247,6 +319,9 @@ class Interface:
             self.draw_buttons()
             self.draw_game_info()
             self.show_feedback(self.feedback_message)
+
+            if self.game_over:
+                self.draw_ending_screen()
 
             pygame.display.flip()
             self.clock.tick(60)
