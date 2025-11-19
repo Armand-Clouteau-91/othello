@@ -12,7 +12,7 @@ class Interface:
         self.screen_size = screen_size
         self.grid_size = grid_size
         self.cell_size = screen_size // grid_size
-        self.screen = pygame.display.set_mode((screen_size + 200, screen_size))
+        self.screen = pygame.display.set_mode((screen_size + 250, screen_size))
         pygame.display.set_caption("Othello")
         self.clock = pygame.time.Clock()
         self.game = Game()
@@ -24,6 +24,8 @@ class Interface:
         self.GRAY = (128, 128, 128)
         self.YELLOW = (255, 255, 0)
         self.RED = (255, 0, 0)
+        self.LIGHT_GRAY = (220, 220, 220)
+        self.DARK_GREEN = (0, 100, 0)
 
         # Boutons
         self.buttons = self.create_buttons()
@@ -37,9 +39,9 @@ class Interface:
     def create_buttons(self):
         """Crée les boutons Undo, Restart, Pass Turn"""
         return {
-            "undo": pygame.Rect(620, 100, 150, 50),
-            "restart": pygame.Rect(620, 170, 150, 50),
-            "pass": pygame.Rect(620, 240, 150, 50),
+            "undo": pygame.Rect(620, 350, 150, 50),
+            "restart": pygame.Rect(620, 420, 150, 50),
+            "pass": pygame.Rect(620, 490, 150, 50),
         }
 
     def handle_click(self, pos):
@@ -125,7 +127,7 @@ class Interface:
         if message:
             font = pygame.font.Font(None, 24)
             text = font.render(message, True, self.RED)
-            self.screen.blit(text, (620, 350))
+            self.screen.blit(text, (620, 560))
 
     def draw_board(self):
         """Dessine la grille 8x8"""
@@ -170,24 +172,60 @@ class Interface:
             pygame.draw.circle(self.screen, self.YELLOW, center, 10, 3)
 
     def draw_game_info(self):
-        """Affiche les scores et le tour actuel"""
-        font = pygame.font.Font(None, 36)
-
-        # Tour actuel
+        """Affiche les panneaux de statut avec scores et tour actuel"""
+    
+        # === PANNEAU DU TOUR ACTUEL ===
+        # Panneau de fond
+        turn_panel = pygame.Rect(615, 20, 220, 100)
+        pygame.draw.rect(self.screen, self.LIGHT_GRAY, turn_panel)
+        pygame.draw.rect(self.screen, self.BLACK, turn_panel, 3)
+    
+        # Titre
+        font_title = pygame.font.Font(None, 28)
+        title = font_title.render("Current Turn", True, self.BLACK)
+        self.screen.blit(title, (660, 30))
+    
+        # Nom du joueur actuel et indicateur visuel
         current_player = "Black" if self.game.color == "B" else "White"
-        turn_text = font.render(f"{current_player}'s turn", True, self.BLACK)
-        self.screen.blit(turn_text, (620, 30))
-
-        # Scores
+        font_player = pygame.font.Font(None, 36)
+        player_text = font_player.render(current_player, True, self.BLACK)
+        self.screen.blit(player_text, (680, 65))
+    
+        # Cercle indicateur (couleur du joueur)
+        indicator_color = self.BLACK if self.game.color == "B" else self.WHITE
+        pygame.draw.circle(self.screen, indicator_color, (645, 80), 15)
+        pygame.draw.circle(self.screen, self.BLACK, (645, 80), 15, 2)
+    
+        # === PANNEAU DES SCORES ===
+        # Panneau de fond
+        score_panel = pygame.Rect(615, 140, 220, 180)
+        pygame.draw.rect(self.screen, self.LIGHT_GRAY, score_panel)
+        pygame.draw.rect(self.screen, self.BLACK, score_panel, 3)
+    
+        # Titre
+        score_title = font_title.render("Scores", True, self.BLACK)
+        self.screen.blit(score_title, (695, 150))
+    
+        # Score pour le joueur noir
         font_score = pygame.font.Font(None, 32)
-        black_score = font_score.render(
-            f"Black: {self.game.score['B']}", True, self.BLACK
-        )
-        white_score = font_score.render(
-            f"White: {self.game.score['W']}", True, self.BLACK
-        )
-        self.screen.blit(black_score, (620, 400))
-        self.screen.blit(white_score, (620, 440))
+    
+        # Indicateur + texte pour Black
+        pygame.draw.circle(self.screen, self.BLACK, (640, 195), 12)
+        pygame.draw.circle(self.screen, self.BLACK, (640, 195), 12, 2)
+        black_text = font_score.render(f"Black: {self.game.score['B']}", True, self.BLACK)
+        self.screen.blit(black_text, (660, 183))
+    
+        # Indicateur + texte pour White
+        pygame.draw.circle(self.screen, self.WHITE, (640, 235), 12)
+        pygame.draw.circle(self.screen, self.BLACK, (640, 235), 12, 2)
+        white_text = font_score.render(f"White: {self.game.score['W']}", True, self.BLACK)
+        self.screen.blit(white_text, (660, 223))
+    
+        # === COUPS VALIDES DISPONIBLES ===
+        valid_moves_count = len(self.game.board.remaining_moves(self.game.color))
+        font_moves = pygame.font.Font(None, 24)
+        moves_text = font_moves.render(f"Valid moves: {valid_moves_count}", True, self.DARK_GREEN)
+        self.screen.blit(moves_text, (630, 280))
 
     def run(self):
         """Boucle principale du jeu"""
