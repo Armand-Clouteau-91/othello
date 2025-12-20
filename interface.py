@@ -1,7 +1,7 @@
 import pygame
 import sys
 from game import Game
-
+from player import Player
 
 class Interface:
     """Gère l'interface utilisateur et les interactions."""
@@ -20,6 +20,10 @@ class Interface:
         self.start_time = 0
         self.elapsed_time = 0
         self.game_over = False
+        self.state = "MENU" # 'MENU' or 'GAME'
+        self.game_mode = None # 'PvP' or 'PvBot'
+        self.bot_color = 'W'  # Bot plays White by default
+        self.bot = Player(self.bot_color)
 
         # Couleurs
         self.GREEN = (34, 139, 34)
@@ -33,6 +37,7 @@ class Interface:
 
         # Boutons
         self.buttons = self.create_buttons()
+        self.menu_buttons = self.create_menu_buttons()
 
         # Historique pour undo
         self.move_history = []
@@ -48,8 +53,19 @@ class Interface:
             "pass": pygame.Rect(620, 450, 150, 50),
         }
 
+    def create_menu_buttons(self):
+            center_x = (self.screen_size + 250) // 2
+            return {
+                "pvp": pygame.Rect(center_x - 150, 250, 300, 60),
+                "pvbot": pygame.Rect(center_x - 150, 350, 300, 60)
+            }
+
+
     def handle_click(self, pos):
         """Gère les clics souris"""
+        #if self.game_mode == "PvBot" and self.game.color == self.bot_color:
+        #    return
+        
         x, y = pos
 
         # Vérifie si le clic est sur le plateau
@@ -82,6 +98,37 @@ class Interface:
             if button_rect.collidepoint(pos):
                 self.handle_button_click(button_name)
 
+    def handle_menu_click(self, pos):
+        for key, rect in self.menu_buttons.items():
+            if rect.collidepoint(pos):
+                if key == "pvp":
+                    self.game_mode = "PvP"
+                elif key == "pvbot":
+                    self.game_mode = "PvBot"
+                
+                # Start Game
+                self.state = "GAME"
+                self.game = Game()
+                self.move_history = []
+                self.timer_started = False
+                self.game_over = False
+
+    def perform_bot_move(self):
+        """Execute le tour du bot"""
+        move = self.bot.get_greedy_move(self.game)
+        if move:
+            row, col = move
+            self.move_history.append(
+                (self.game.board.board.copy(), self.game.color, self.game.score.copy())
+            )
+            self.game.turn(row, col)
+            self.game.color = self.game.opponent[self.game.color]
+            self.feedback_message = ""
+        else:
+            # Bot must pass
+            self.game.color = self.game.opponent[self.game.color]
+            self.feedback_message = "Bot passed!"
+
     def handle_button_click(self, button_name):
         """Gère les clics sur les boutons"""
         if button_name == "undo":
@@ -96,6 +143,8 @@ class Interface:
         elif button_name == "pass":
             self.game.color = self.game.opponent[self.game.color]
             self.feedback_message = "Turn passed!"
+        elif button_name == "menu":
+            self.state = "MENU"
 
     def undo_move(self):
         """Annule le dernier coup"""
@@ -103,13 +152,18 @@ class Interface:
             self.feedback_message = "No moves to undo!"
             return
 
-        # Récupère le dernier état
-        previous_board, previous_color, previous_score = self.move_history.pop()
+        undo_steps = 2 if self.game_mode == "PvBot" and len(self.move_history) >= 2 else 1
 
-        # Restaure l'état
-        self.game.board.board = previous_board.copy()
-        self.game.color = previous_color
-        self.game.score = previous_score.copy()
+        for step in range(undo_steps):
+                
+            # Récupère le dernier état
+            previous_board, previous_color, previous_score = self.move_history.pop()
+
+            # Restaure l'état
+            self.game.board.board = previous_board.copy()
+            self.game.color = previous_color
+            self.game.score = previous_score.copy()
+        
         self.feedback_message = "Move undone!"
 
     def draw_buttons(self):
@@ -172,6 +226,11 @@ class Interface:
 
     def highlight_valid_moves(self):
         """Surligne les cases où le joueur peut jouer"""
+        
+        # Only highlight if it's NOT the bot's turn (cleaner UI)
+        if self.game_mode == "PvBot" and self.game.color == self.bot_color:
+            return
+        
         valid_moves = self.game.board.remaining_moves(self.game.color)
 
         for row, col in valid_moves:
@@ -302,26 +361,39 @@ class Interface:
                     running = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    move_made = self.handle_click(event.pos)
-                    if move_made and not self.game_over:
-                        if self.check_game_over() :
-                            self.game_over = True
+                    if self.state == "MENU":
+                        self.handle_menu_click(event.pos)
+                    else:
+                        self.handle_click(event.pos)
                             
             
-            if self.timer_started and not self.game_over:
-                self.elapsed_time = (pygame.time.get_ticks() - self.start_time) / 1000
+            if self.state == "GAME":
+                # Check for Game Over
+                if self.check_game_over():
+                    self.game_over = True
+                
+                # Timer Logic
+                if self.timer_started and not self.game_over:
+                    self.elapsed_time = (pygame.time.get_ticks() - self.start_time) / 1000
+
+                # BOT TURN LOGIC
+                # If mode is PvBot, game isn't over, and it's the bot's color
+                if (self.game_mode == "PvBot" and 
+                    not self.game_over and 
+                    self.game.color == self.bot_color):
+                    
+                    # Small delay for better UX
+                    pygame.time.wait(500) 
+                    self.perform_bot_move()
                 
             # Dessine tout
             self.screen.fill(self.WHITE)
-            self.draw_board()
-            self.draw_discs()
-            self.highlight_valid_moves()
-            self.draw_buttons()
-            self.draw_game_info()
-            self.show_feedback(self.feedback_message)
-
-            if self.game_over:
-                self.draw_ending_screen()
+            if self.state == "MENU":
+                self.draw_menu()
+            else:
+                self.draw_game_interface()
+                if self.game_over:
+                    self.draw_ending_screen()
 
             pygame.display.flip()
             self.clock.tick(60)
@@ -329,6 +401,37 @@ class Interface:
         pygame.quit()
         sys.exit()
 
+    def draw_menu(self):
+            # Overlay
+            overlay = pygame.Surface((self.screen_size + 250, self.screen_size))
+            overlay.fill(self.DARK_GREEN)
+            self.screen.blit(overlay, (0, 0))
+
+            # Title
+            font_title = pygame.font.Font(None, 80)
+            text_title = font_title.render("OTHELLO", True, self.WHITE)
+            rect_title = text_title.get_rect(center=((self.screen_size + 250) // 2, 150))
+            self.screen.blit(text_title, rect_title)
+
+            mouse_pos = pygame.mouse.get_pos()
+            for key, rect in self.menu_buttons.items():
+                color = self.LIGHT_GRAY if rect.collidepoint(mouse_pos) else self.WHITE
+                pygame.draw.rect(self.screen, color, rect)
+                pygame.draw.rect(self.screen, self.BLACK, rect, 3)
+
+                label = "Player vs Player" if key == "pvp" else "Player vs Bot"
+                font_btn = pygame.font.Font(None, 40)
+                text_btn = font_btn.render(label, True, self.BLACK)
+                text_rect = text_btn.get_rect(center=rect.center)
+                self.screen.blit(text_btn, text_rect)
+
+    def draw_game_interface(self):
+        self.draw_board()
+        self.draw_discs()
+        self.highlight_valid_moves()
+        self.draw_buttons()
+        self.draw_game_info()
+        self.show_feedback(self.feedback_message)
 
 if __name__ == "__main__":
     interface = Interface()

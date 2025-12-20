@@ -91,6 +91,19 @@ class Game:
             winner = "nobody, that's a draw"
         return f"The winner is {winner}"
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # Remove uncopyable objects
+        if "clock" in state:
+            del state["clock"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        # Recreate the clock if needed
+        self.clock = pygame.time.Clock()
+
+
 
 if __name__ == "__main__":
     test_game = Game()

@@ -34,7 +34,7 @@ class Board:
                     and 0 <= ny < self.size
                     and self.board[nx, ny] == opponent
                 ):
-                    # 4. Vérifie qu'il y ai un pion allié sur une ligne ou une diagonale
+                    # 4. Vérifie qu'il y ait un pion allié sur une ligne ou une diagonale
                     nx += dx
                     ny += dy
                     while 0 <= nx < self.size and 0 <= ny < self.size:
