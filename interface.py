@@ -48,9 +48,10 @@ class Interface:
     def create_buttons(self):
         """Crée les boutons Undo, Restart, Pass Turn"""
         return {
-            "undo": pygame.Rect(620, 330, 150, 50),
-            "restart": pygame.Rect(620, 390, 150, 50),
-            "pass": pygame.Rect(620, 450, 150, 50),
+            "undo": pygame.Rect(620, 330, 100, 40),
+            "restart": pygame.Rect(730, 330, 100, 40),
+            "pass": pygame.Rect(620, 390, 100, 40),
+            "menu" : pygame.Rect(730, 390, 100, 40),
         }
 
     def create_menu_buttons(self):
@@ -63,8 +64,6 @@ class Interface:
 
     def handle_click(self, pos):
         """Gère les clics souris"""
-        #if self.game_mode == "PvBot" and self.game.color == self.bot_color:
-        #    return
         
         x, y = pos
 
@@ -307,7 +306,7 @@ class Interface:
 
         font = pygame.font.Font(None, 36)
         timer_text = font.render(time_str, True, self.BLACK)
-        timer_rect = timer_text.get_rect(topright=(725, 510))  
+        timer_rect = timer_text.get_rect(topright=(757, 475))  
         self.screen.blit(timer_text, timer_rect)
     
     def check_game_over(self):

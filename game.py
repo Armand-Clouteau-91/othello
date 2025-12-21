@@ -70,9 +70,6 @@ class Game:
         self.score[self.opponent[self.color]] = (
             score_white if self.color == "B" else score_black
         )
-        print(f"Player {self.color} played a piece at {x}, {y}")
-        print(self.board.board)
-        print(f"the score is {self.score}")
         return True
 
     # This creates a boolean array and then counts the number of 'True' values.
@@ -84,9 +81,9 @@ class Game:
     # determines the winner based on the score
     def winner(self):
         if self.score["B"] > self.score["W"]:
-            winner = "B"
+            winner = "Black"
         elif self.score["B"] < self.score["W"]:
-            winner = "W"
+            winner = "White"
         else:
             winner = "nobody, that's a draw"
         return f"The winner is {winner}"
