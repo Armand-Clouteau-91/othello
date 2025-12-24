@@ -21,5 +21,5 @@ python interface.py
 ## AI Behavior
 - Evaluates all valid moves
 - Chooses move that maximizes immediate score
-- Plays automatically with 500ms delay
+- Plays automatically with 2000ms delay
 
