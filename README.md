@@ -30,4 +30,4 @@ python game.py
 3. Input Coordinates: When prompted, enter the Row and Column as numbers between 1 and 8.
 Example: Entering 3 for row and 4 for column places a piece at (3, 4).
 4. The game will automatically flip opponent pieces.
-5.The game ends when no moves are possible for either player.
+5. The game ends when no moves are possible for either player.
