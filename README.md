@@ -12,7 +12,9 @@ Adds complete Pygame interface with visual board and controls.
 - End game screen
 
 ## How to Run
+```bash
 python interface.py
+```
 
 ## Controls
 - **Click**: Place disc on highlighted square
