@@ -4,7 +4,7 @@ import pygame
 
 
 class Game:
-    """Orchestre le déroulement du jeu : tours, fin de partie, scores."""
+    """Manages the game logic, score, turns and end of the game"""
 
     def __init__(self, score=None, time=0):
         self.running = True
@@ -16,8 +16,11 @@ class Game:
 
     pass
 
-    # handles the game end to end
     def run(self):
+        """
+        Handles the game running end to end 
+        
+        """
         while self.running == True:
             if self.move_available():
                 print(f"It's {self.color}'s turn")
@@ -31,8 +34,11 @@ class Game:
                 break
         return self.winner()
 
-    # checks there still are moves available to play, changes player or ends the game if needed
     def move_available(self):
+        """
+        checks there still are moves available to play, changes player or ends the game if needed
+        
+        """
         if self.board.remaining_moves(self.color) == []:
             print(f"{self.color} cannot play.")
             if self.board.remaining_moves(self.opponent[self.color]) == []:
@@ -47,8 +53,11 @@ class Game:
             play_on = True
         return play_on
 
-    # takes the input of a move
     def player_move(self):
+        """
+        Player input
+        
+        """
         while True:
             try:
                 row = int(input("Enter the row you want to put your piece in")) - 1
@@ -57,8 +66,14 @@ class Game:
             except ValueError:
                 print("\nInvalid input. Please enter numbers only. Try again.\n")
 
-    # players take turn until all pieces are on the board
+    
     def turn(self, x, y):
+        """
+        main turn logic calling valid_move(), apply_move(), get_score() and updates the score
+        
+        :param x: row
+        :param y: column
+        """
         check = self.board.valid_move(x, y, self.color)
         if check == False:
             print(f"the move {x}, {y} is not valid, please try another one.")
@@ -72,14 +87,22 @@ class Game:
         )
         return True
 
-    # This creates a boolean array and then counts the number of 'True' values.
     def get_score(self):
+        """
+        Returns the current score by counting each player's discs
+        
+        """
+        # Creates a boolean array and then counts the number of 'True' values.
         black_score = np.count_nonzero(self.board.board == "B")
         white_score = np.count_nonzero(self.board.board == "W")
         return black_score, white_score
 
-    # determines the winner based on the score
+
     def winner(self):
+        """
+        Determines the winner based on the score
+        
+        """
         if self.score["B"] > self.score["W"]:
             winner = "Black"
         elif self.score["B"] < self.score["W"]:
@@ -89,15 +112,22 @@ class Game:
         return f"The winner is {winner}"
 
     def __getstate__(self):
+        """
+        Remove uncopyable objects to prevent any error we deepcopying
+        
+        """
         state = self.__dict__.copy()
-        # Remove uncopyable objects
         if "clock" in state:
             del state["clock"]
         return state
 
     def __setstate__(self, state):
+        """
+        Reattach the clock to the state
+        
+        :param state: State we deepcopied
+        """
         self.__dict__.update(state)
-        # Recreate the clock if needed
         self.clock = pygame.time.Clock()
 
 
