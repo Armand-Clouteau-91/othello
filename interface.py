@@ -6,7 +6,7 @@ from player import Player
 class Interface:
     """Gère l'interface utilisateur et les interactions."""
 
-    # Initialisation de pygame et des attributs de l'interface
+    # Pygame and interface attributes initialisation
     def __init__(self, screen_size=600, grid_size=8):
         pygame.init()
         self.screen_size = screen_size
@@ -25,7 +25,7 @@ class Interface:
         self.bot_color = 'W'  # Bot plays White by default
         self.bot = Player(self.bot_color)
 
-        # Couleurs
+        # colors
         self.GREEN = (34, 139, 34)
         self.BLACK = (0, 0, 0)
         self.WHITE = (255, 255, 255)
@@ -35,18 +35,18 @@ class Interface:
         self.LIGHT_GRAY = (220, 220, 220)
         self.DARK_GREEN = (0, 100, 0)
 
-        # Boutons
+        # Buttons
         self.buttons = self.create_buttons()
         self.menu_buttons = self.create_menu_buttons()
 
-        # Historique pour undo
+        # hiistoric for undoing things
         self.move_history = []
 
-        # Message de feedback
+        # feedback messages
         self.feedback_message = ""
 
     def create_buttons(self):
-        """Crée les boutons Undo, Restart, Pass Turn"""
+        """creates buttons Undo, Restart, Pass Turn and Menu"""
         return {
             "undo": pygame.Rect(620, 330, 100, 40),
             "restart": pygame.Rect(730, 330, 100, 40),
@@ -55,6 +55,7 @@ class Interface:
         }
 
     def create_menu_buttons(self):
+            """Creates the main menu selection buttons."""
             center_x = (self.screen_size + 250) // 2
             return {
                 "pvp": pygame.Rect(center_x - 150, 250, 300, 60),
@@ -63,27 +64,29 @@ class Interface:
 
 
     def handle_click(self, pos):
-        """Gère les clics souris"""
+        """Processes mouse clicks during the active game phase."""
         
         x, y = pos
 
-        # Vérifie si le clic est sur le plateau
+        # Check if click is within the game board
         if x < self.screen_size and y < self.screen_size:
             col = x // self.cell_size
             row = y // self.cell_size
 
-            # Sauvegarde l'état avant le coup (pour undo)
+            # Save state for undo functionality
             self.move_history.append(
                 (self.game.board.board.copy(), self.game.color, self.game.score.copy())
             )
 
-            # Valide et applique le coup
+            # Validate and apply move
             if self.game.board.valid_move(row, col, self.game.color):
                 self.game.turn(row, col)
+                # Start timer on first move
                 if not self.timer_started :
                     self.start_time = pygame.time.get_ticks()
                     self.timer_started = True
-                # ✓ AJOUTE CETTE LIGNE : Change le joueur
+
+                # Switch turns
                 self.game.color = self.game.opponent[self.game.color]
                 self.feedback_message = ""
                 return True
@@ -92,12 +95,13 @@ class Interface:
                 self.feedback_message = "Invalid move!"
                 return False
 
-        # Vérifie si le clic est sur un bouton
+        # Check if click is on a UI button
         for button_name, button_rect in self.buttons.items():
             if button_rect.collidepoint(pos):
                 self.handle_button_click(button_name)
 
     def handle_menu_click(self, pos):
+        """Processes mouse clicks on the main menu."""
         for key, rect in self.menu_buttons.items():
             if rect.collidepoint(pos):
                 if key == "pvp":
@@ -105,7 +109,7 @@ class Interface:
                 elif key == "pvbot":
                     self.game_mode = "PvBot"
                 
-                # Start Game
+                # Initialize new game session
                 self.state = "GAME"
                 self.game = Game()
                 self.move_history = []
@@ -113,7 +117,7 @@ class Interface:
                 self.game_over = False
 
     def perform_bot_move(self):
-        """Execute le tour du bot"""
+        """Executes the bot's logic and applies the move."""
         move = self.bot.get_greedy_move(self.game)
         if move:
             row, col = move
@@ -124,12 +128,12 @@ class Interface:
             self.game.color = self.game.opponent[self.game.color]
             self.feedback_message = ""
         else:
-            # Bot must pass
+            # Bot passes if no moves are available
             self.game.color = self.game.opponent[self.game.color]
             self.feedback_message = "Bot passed!"
 
     def handle_button_click(self, button_name):
-        """Gère les clics sur les boutons"""
+        """Executes actions for specific UI buttons."""
         if button_name == "undo":
             self.undo_move()
         elif button_name == "restart":
@@ -146,19 +150,20 @@ class Interface:
             self.state = "MENU"
 
     def undo_move(self):
-        """Annule le dernier coup"""
+        """Reverts the game state (1 step for PvP, 2 steps for PvBot)."""
         if len(self.move_history) == 0:
             self.feedback_message = "No moves to undo!"
             return
 
+        # Undo 2 moves in PvBot to return to player's turn
         undo_steps = 2 if self.game_mode == "PvBot" and len(self.move_history) >= 2 else 1
 
         for step in range(undo_steps):
                 
-            # Récupère le dernier état
+            # gets the last state
             previous_board, previous_color, previous_score = self.move_history.pop()
 
-            # Restaure l'état
+            # restore the state
             self.game.board.board = previous_board.copy()
             self.game.color = previous_color
             self.game.score = previous_score.copy()
@@ -166,34 +171,34 @@ class Interface:
         self.feedback_message = "Move undone!"
 
     def draw_buttons(self):
-        """Dessine les boutons avec effet hover"""
+        """Renders the side panel buttons with hover effects."""
         mouse_pos = pygame.mouse.get_pos()
 
         for button_name, button_rect in self.buttons.items():
-            # Change la couleur si la souris survole
+            # higlight when hovering
             if button_rect.collidepoint(mouse_pos):
                 color = (100, 100, 100)
             else:
                 color = self.GRAY
 
             pygame.draw.rect(self.screen, color, button_rect)
-            pygame.draw.rect(self.screen, self.BLACK, button_rect, 2)  # Bordure
+            pygame.draw.rect(self.screen, self.BLACK, button_rect, 2)  # border
 
-            # Ajoute le texte du bouton
+            # adds the text on the buttons
             font = pygame.font.Font(None, 30)
             text = font.render(button_name.capitalize(), True, self.WHITE)
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
 
     def show_feedback(self, message):
-        """Affiche des messages à l'utilisateur"""
+        """Displays temporary feedback messages to the user."""
         if message:
             font = pygame.font.Font(None, 24)
             text = font.render(message, True, self.RED)
             self.screen.blit(text, (620, 560))
 
     def draw_board(self):
-        """Dessine la grille 8x8"""
+        """Draws the 8x8 game grid."""
         for row in range(self.grid_size):
             for col in range(self.grid_size):
                 rect = pygame.Rect(
@@ -206,7 +211,7 @@ class Interface:
                 pygame.draw.rect(self.screen, self.BLACK, rect, 2)
 
     def draw_discs(self):
-        """Dessine les pions sur le plateau"""
+        """Renders the pieces (black and white discs) on the board."""
         for row in range(self.grid_size):
             for col in range(self.grid_size):
                 cell = self.game.board.board[row, col]
@@ -224,9 +229,9 @@ class Interface:
                     )
 
     def highlight_valid_moves(self):
-        """Surligne les cases où le joueur peut jouer"""
+        """Highlights valid move positions for the current player."""
         
-        # Only highlight if it's NOT the bot's turn (cleaner UI)
+        # Hide hints during bot's turn
         if self.game_mode == "PvBot" and self.game.color == self.bot_color:
             return
         
@@ -240,63 +245,63 @@ class Interface:
             pygame.draw.circle(self.screen, self.YELLOW, center, 10, 3)
 
     def draw_game_info(self):
-        """Affiche les panneaux de statut avec scores et tour actuel"""
-    
-        # === PANNEAU DU TOUR ACTUEL ===
-        # Panneau de fond
+        """Draws status panels (turn, score) and the game timer."""
+        
+        # turn Panel
         turn_panel = pygame.Rect(615, 20, 220, 100)
         pygame.draw.rect(self.screen, self.LIGHT_GRAY, turn_panel)
         pygame.draw.rect(self.screen, self.BLACK, turn_panel, 3)
     
-        # Titre
+        # title
         font_title = pygame.font.Font(None, 28)
         title = font_title.render("Current Turn", True, self.BLACK)
         self.screen.blit(title, (660, 30))
     
-        # Nom du joueur actuel et indicateur visuel
+        # player name and visual indicator
         current_player = "Black" if self.game.color == "B" else "White"
         font_player = pygame.font.Font(None, 36)
         player_text = font_player.render(current_player, True, self.BLACK)
         self.screen.blit(player_text, (680, 65))
     
-        # Cercle indicateur (couleur du joueur)
+        # indicative circle
         indicator_color = self.BLACK if self.game.color == "B" else self.WHITE
         pygame.draw.circle(self.screen, indicator_color, (645, 80), 15)
         pygame.draw.circle(self.screen, self.BLACK, (645, 80), 15, 2)
     
-        # === PANNEAU DES SCORES ===
-        # Panneau de fond
+        # score panel
+        # background panel
         score_panel = pygame.Rect(615, 140, 220, 180)
         pygame.draw.rect(self.screen, self.LIGHT_GRAY, score_panel)
         pygame.draw.rect(self.screen, self.BLACK, score_panel, 3)
     
-        # Titre
+        # title
         score_title = font_title.render("Scores", True, self.BLACK)
         self.screen.blit(score_title, (695, 150))
     
-        # Score pour le joueur noir
+        # score font
         font_score = pygame.font.Font(None, 32)
     
-        # Indicateur + texte pour Black
+        # ind and text for Black
         pygame.draw.circle(self.screen, self.BLACK, (640, 195), 12)
         pygame.draw.circle(self.screen, self.BLACK, (640, 195), 12, 2)
         black_text = font_score.render(f"Black: {self.game.score['B']}", True, self.BLACK)
         self.screen.blit(black_text, (660, 183))
     
-        # Indicateur + texte pour White
+        # ind and text for White
         pygame.draw.circle(self.screen, self.WHITE, (640, 235), 12)
         pygame.draw.circle(self.screen, self.BLACK, (640, 235), 12, 2)
         white_text = font_score.render(f"White: {self.game.score['W']}", True, self.BLACK)
         self.screen.blit(white_text, (660, 223))
     
-        # === COUPS VALIDES DISPONIBLES ===
+        # allowed moves
         valid_moves_count = len(self.game.board.remaining_moves(self.game.color))
         font_moves = pygame.font.Font(None, 24)
         moves_text = font_moves.render(f"Valid moves: {valid_moves_count}", True, self.DARK_GREEN)
         self.screen.blit(moves_text, (630, 280))
 
+        # timer display
         if self.timer_started and not self.game_over:
-            current_time = (pygame.time.get_ticks() - self.start_time) / 1000
+            current_time = (pygame.time.get_ticks() - self.start_time) / 1000 # converts from milliseconds to seconds
         else:
             current_time = self.elapsed_time # Will be 0 if restarted, or final time if game over
 
@@ -310,6 +315,7 @@ class Interface:
         self.screen.blit(timer_text, timer_rect)
     
     def check_game_over(self):
+        """Checks if the game has ended (no moves left or board full)."""
         no_moves_black = len(self.game.board.remaining_moves('B')) == 0
         no_moves_white = len(self.game.board.remaining_moves('W')) == 0
         board_full = not any('.' in row for row in self.game.board.board)
@@ -320,21 +326,23 @@ class Interface:
         return False
 
     def draw_ending_screen(self):
-        # Shadow overlay
+        """Draws the game over overlay with final scores and winner."""
+
+        # shadow overlay
         overlay = pygame.Surface((self.screen_size, self.screen_size), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))  # Black with alpha for shadow effect
         self.screen.blit(overlay, (0, 0))
 
-        # Display final scores and game duration
+        # display final scores and game duration
         font_title = pygame.font.Font(None, 48)
         font_info = pygame.font.Font(None, 36)
 
-        # Title
+        # title
         title_text = font_title.render("Game Over", True, self.WHITE)
         title_rect = title_text.get_rect(center=(self.screen_size // 2, 100))
         self.screen.blit(title_text, title_rect)
 
-        # Scores
+        # scores
         black_score = self.game.score['B']
         white_score = self.game.score['W']
         winner = self.game.winner()
@@ -344,17 +352,19 @@ class Interface:
         winner_rect = winner_text.get_rect(center=(self.screen_size // 2, 240))
         self.screen.blit(score_text, score_rect)
         self.screen.blit(winner_text, winner_rect)
-        # Timer
+        
+        # timer
         timer_text = font_info.render(f"Time: {self.elapsed_time:.2f} s", True, self.WHITE)
         timer_rect = timer_text.get_rect(center=(self.screen_size // 2, 300))
         self.screen.blit(timer_text, timer_rect)
 
 
     def run(self):
-        """Boucle principale du jeu"""
+        """Main game loop handling events, logic updates, and rendering."""
         running = True
 
         while running:
+            # event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -365,27 +375,26 @@ class Interface:
                     else:
                         self.handle_click(event.pos)
                             
-            
+            # game Logic Updates
             if self.state == "GAME":
-                # Check for Game Over
                 if self.check_game_over():
                     self.game_over = True
                 
-                # Timer Logic
+                # timer Logic
                 if self.timer_started and not self.game_over:
                     self.elapsed_time = (pygame.time.get_ticks() - self.start_time) / 1000
 
-                # BOT TURN LOGIC
-                # If mode is PvBot, game isn't over, and it's the bot's color
+                # bot turn logic
+                # if mode is PvBot, game isn't over, and it's the bot's color
                 if (self.game_mode == "PvBot" and 
                     not self.game_over and 
                     self.game.color == self.bot_color):
                     
-                    # Small delay for better UX
-                    pygame.time.wait(500) 
+                    # small delay before the bot plays
+                    pygame.time.wait(2000) 
                     self.perform_bot_move()
                 
-            # Dessine tout
+            # rendering
             self.screen.fill(self.WHITE)
             if self.state == "MENU":
                 self.draw_menu()
@@ -401,12 +410,13 @@ class Interface:
         sys.exit()
 
     def draw_menu(self):
-            # Overlay
+            """Renders the main interface"""
+            # overlay
             overlay = pygame.Surface((self.screen_size + 250, self.screen_size))
             overlay.fill(self.DARK_GREEN)
             self.screen.blit(overlay, (0, 0))
 
-            # Title
+            # title
             font_title = pygame.font.Font(None, 80)
             text_title = font_title.render("OTHELLO", True, self.WHITE)
             rect_title = text_title.get_rect(center=((self.screen_size + 250) // 2, 150))
@@ -425,6 +435,7 @@ class Interface:
                 self.screen.blit(text_btn, text_rect)
 
     def draw_game_interface(self):
+        """Helper to draw all game components."""
         self.draw_board()
         self.draw_discs()
         self.highlight_valid_moves()
