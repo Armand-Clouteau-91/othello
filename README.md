@@ -12,8 +12,9 @@ Final version with AI opponent and complete feature set.
 - Menu button to return to main screen
 
 ## How to Run
+```bash
 python interface.py
-
+```
 ## Game Modes
 1. **Player vs Player**: Two humans play locally
 2. **Player vs Bot**: Play against AI (bot plays as White)
