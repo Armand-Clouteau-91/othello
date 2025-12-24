@@ -15,12 +15,14 @@ You will need Python installed along with the following libraries:
 
 ```bash 
 pip install numpy pygame
+```
 
 ## 🚀 How to Run
 Ensure board.py and game.py are in the same folder.
 Run the game file:
 ```bash
 python game.py
+```
 
 ## 🎮 How to Play
 1. The game starts with 2 Black and 2 White discs in the center.
@@ -28,4 +30,4 @@ python game.py
 3. Input Coordinates: When prompted, enter the Row and Column as numbers between 1 and 8.
 Example: Entering 3 for row and 4 for column places a piece at (3, 4).
 4. The game will automatically flip opponent pieces.
-5. The game ends when no moves are possible for either player.
+5.The game ends when no moves are possible for either player.
