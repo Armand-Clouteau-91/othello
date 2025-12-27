@@ -24,6 +24,7 @@ class Interface:
         self.game_mode = None # 'PvP' or 'PvBot'
         self.bot_color = 'W'  # Bot plays White by default
         self.bot = Player(self.bot_color)
+        self.bot_delay_start = None
 
         # colors
         self.GREEN = (34, 139, 34)
@@ -390,9 +391,15 @@ class Interface:
                     not self.game_over and 
                     self.game.color == self.bot_color):
                     
-                    # small delay before the bot plays
-                    pygame.time.wait(2000) 
-                    self.perform_bot_move()
+                    if self.bot_delay_start is None:
+                        self.bot_delay_start = pygame.time.get_ticks()
+                    
+                    # Check if 1 second (1000ms) has passed before the bot makes a move
+                    current_ticks = pygame.time.get_ticks()
+                    if current_ticks - self.bot_delay_start >= 1000:
+                        self.perform_bot_move()
+                        self.bot_delay_start = None # Reset the timer for the next turn
+                    
                 
             # rendering
             self.screen.fill(self.WHITE)
