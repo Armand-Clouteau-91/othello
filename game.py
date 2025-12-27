@@ -34,7 +34,6 @@ class Game:
                 break
         return self.winner()
 
-    # checks there still are moves available to play, changes player or ends the game if needed
     def move_available(self):
         """
         Checks there still are moves available to play, changes player or ends the game if needed
