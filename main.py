@@ -1,5 +1,5 @@
 def main():
-    """Point d’entrée : instancie Board, Players, Interface, Game et lance la partie."""
+    """Entry point: instantiates Board, Players, Interface, Game, and starts the game."""
     pass
 
 

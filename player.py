@@ -1,7 +1,5 @@
 class Player:
-    """Représente un joueur (humain ou plus tard un bot simple)."""
+    """represent a player (human or bot later on in the development porcess)."""
 
     pass
 
-
-# test
