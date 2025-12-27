@@ -176,7 +176,7 @@ class Interface:
         mouse_pos = pygame.mouse.get_pos()
 
         for button_name, button_rect in self.buttons.items():
-            # higlight when hovering
+            # highlight when hovering
             if button_rect.collidepoint(mouse_pos):
                 color = (100, 100, 100)
             else:

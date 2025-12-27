@@ -25,7 +25,7 @@ class Player:
 
         # iterate through every possible move
         for row, col in valid_moves:
-            # create a deep copy of the game to simulate the future to ensures we don't mess up the actual game board
+            # create a deep copy of the game to simulate the future to ensure we don't mess up the actual game board
             temp_game = copy.deepcopy(game_instance)
             
             # execute the move on the temporary board
