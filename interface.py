@@ -4,7 +4,7 @@ from game import Game
 from player import Player
 
 class Interface:
-    """Gère l'interface utilisateur et les interactions."""
+    """Manages UI and user interactions"""
 
     # Pygame and interface attributes initialisation
     def __init__(self, screen_size=600, grid_size=8):
@@ -39,7 +39,7 @@ class Interface:
         self.buttons = self.create_buttons()
         self.menu_buttons = self.create_menu_buttons()
 
-        # hiistoric for undoing things
+        # historic for undoing things
         self.move_history = []
 
         # feedback messages
