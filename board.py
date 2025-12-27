@@ -11,7 +11,7 @@ class Board:
         self.board = self.create_board()
 
     def create_board(self):
-        """Creates the board and the positions the intiial discs."""
+        """Creates the board and the positions the initial discs."""
         
         # Create a 8x8 board
         b = np.full((self.size, self.size), fill_value=".", dtype="<U1")
@@ -41,7 +41,7 @@ class Board:
                     and 0 <= ny < self.size
                     and self.board[nx, ny] == opponent
                 ):
-                    # Checck the alignement with an ally disc
+                    # Checks the alignment with an ally disc
                     nx += dx
                     ny += dy
                     while 0 <= nx < self.size and 0 <= ny < self.size:
@@ -93,7 +93,7 @@ class Board:
                 flip.append((nx, ny))
                 nx += dx
                 ny += dy
-                # we initialise the looping in the direction we scanned up until we hit the boudn of the board or reach an ally disc,
+                # we initialise the looping in the direction we scanned up until we hit the bound of the board or reach an ally disc,
                 # then flip everything in this direction 
                 while 0 <= nx < self.size and 0 <= ny < self.size:
                     if self.board[nx, ny] == opponent:

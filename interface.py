@@ -97,7 +97,7 @@ class Interface:
             self.feedback_message = "Turn passed!"
 
     def undo_move(self):
-        """Annule le dernier coup"""
+        """Undoes the last move"""
         if len(self.move_history) == 0:
             self.feedback_message = "No moves to undo!"
             return
@@ -116,7 +116,7 @@ class Interface:
         mouse_pos = pygame.mouse.get_pos()
 
         for button_name, button_rect in self.buttons.items():
-            # higlight when hovering
+            # highlight when hovering
             if button_rect.collidepoint(mouse_pos):
                 color = (100, 100, 100)
             else:
